@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DemocracyTech | Web3 & Secure Voting</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Plus+Jakarta+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Outfit', 'sans-serif'],
+            body: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            glass: "rgba(255, 255, 255, 0.05)",
+            glassBorder: "rgba(255, 255, 255, 0.1)",
+            neonCyan: "#00f0ff",
+            neonPurple: "#7000ff",
+            neonPink: "#ff0055",
+            spaceDark: "#050510",
+          },
+          backgroundImage: {
+            'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+            'mesh-gradient': 'radial-gradient(at 40% 20%, hsla(280,100%,74%,1) 0px, transparent 50%), radial-gradient(at 80% 0%, hsla(189,100%,56%,1) 0px, transparent 50%), radial-gradient(at 0% 50%, hsla(355,100%,93%,1) 0px, transparent 50%)',
+          },
+          animation: {
+            'blob': 'blob 7s infinite',
+            'float': 'float 6s ease-in-out infinite',
+            'glow-pulse': 'glow-pulse 2s ease-in-out infinite',
+          },
+          keyframes: {
+            blob: {
+              '0%': { transform: 'translate(0px, 0px) scale(1)' },
+              '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+              '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+              '100%': { transform: 'translate(0px, 0px) scale(1)' },
+            },
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-10px)' },
+            },
+            'glow-pulse': {
+              '0%, 100%': { opacity: '1' },
+              '50%': { opacity: '0.6' },
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    body {
+      background-color: #050510;
+      color: #e2e8f0;
+      cursor: none; /* For custom cursor */
+      overflow-x: hidden;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #050510;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(to bottom, #7000ff, #00f0ff);
+      border-radius: 5px;
+    }
+
+    /* Liquid Glass Effect */
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      border-radius: 1.5rem;
+    }
+    
+    .glass-card {
+      background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 1rem;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .glass-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      border-color: rgba(0, 240, 255, 0.4);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.2), inset 0 0 15px rgba(112, 0, 255, 0.1);
+    }
+
+    .text-glow {
+      text-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+    }
+
+    /* Slideshow Styles */
+    .slideshow {
+      position: relative;
+      overflow: hidden;
+      border-radius: 1.5rem;
+    }
+    .slide {
+      display: none;
+      width: 100%;
+      height: 100%;
+    }
+    .slide.active {
+      display: block;
+      animation: zoomFade 0.6s ease-out forwards;
+    }
+    @keyframes zoomFade {
+      from { opacity: 0; transform: scale(1.05); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .slide-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(5,5,16,0.8), transparent);
+    }
+    
+    .slide-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(8px);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.2);
+      width: 3rem;
+      height: 3rem;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      cursor: none;
+      transition: all 0.3s ease;
+      font-weight: bold;
+    }
+    .slide-nav:hover {
+      background: rgba(0, 240, 255, 0.2);
+      border-color: #00f0ff;
+      box-shadow: 0 0 15px rgba(0,240,255,0.4);
+      transform: translateY(-50%) scale(1.1);
+    }
+    .slide-nav.prev { left: 1rem; }
+    .slide-nav.next { right: 1rem; }
+
+    .slide-dots {
+      position: absolute;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 0.75rem;
+      z-index: 10;
+    }
+    .slide-dot {
+      width: 2.5rem;
+      height: 0.25rem;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.2);
+      border: none;
+      cursor: none;
+      transition: all 0.3s ease;
+      padding: 0;
+    }
+    .slide-dot.active {
+      background: #00f0ff;
+      box-shadow: 0 0 10px #00f0ff;
+      width: 3.5rem;
+    }
+
+    /* Custom Cursor */
+    .cursor-dot, .cursor-outline {
+      position: fixed;
+      top: 0;
+      left: 0;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      z-index: 9999;
+      pointer-events: none;
+    }
+    .cursor-dot {
+      width: 8px;
+      height: 8px;
+      background-color: #00f0ff;
+      box-shadow: 0 0 10px #00f0ff, 0 0 20px #00f0ff;
+    }
+    .cursor-outline {
+      width: 40px;
+      height: 40px;
+      border: 2px solid rgba(0, 240, 255, 0.5);
+      transition: width 0.2s, height 0.2s, background-color 0.2s;
+    }
+    
+    a:hover ~ .cursor-outline,
+    button:hover ~ .cursor-outline,
+    .interactive:hover ~ .cursor-outline {
+      width: 60px;
+      height: 60px;
+      background-color: rgba(0, 240, 255, 0.1);
+      border-color: #ff0055;
+    }
+  </style>
+</head>
+<body class="font-body antialiased relative">
+  <!-- Interactive Cursor Elements -->
+  <div class="cursor-dot" id="cursor-dot"></div>
+  <div class="cursor-outline" id="cursor-outline"></div>
+
+  <!-- Background Animated Orbs -->
+  <div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+    <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-neonPurple/20 mix-blend-screen filter blur-[100px] opacity-70 animate-blob"></div>
+    <div class="absolute top-[20%] right-[-10%] w-[400px] h-[400px] rounded-full bg-neonCyan/20 mix-blend-screen filter blur-[80px] opacity-70 animate-blob" style="animation-delay: 2s;"></div>
+    <div class="absolute bottom-[-20%] left-[20%] w-[600px] h-[600px] rounded-full bg-neonPink/20 mix-blend-screen filter blur-[120px] opacity-50 animate-blob" style="animation-delay: 4s;"></div>
+  </div>
+
+  <header class="fixed top-0 w-full z-50 transition-all duration-300" id="header">
+    <div class="absolute inset-0 bg-spaceDark/40 backdrop-blur-xl border-b border-white/5"></div>
+    <nav class="relative max-w-7xl mx-auto px-6 lg:px-10 py-4 flex items-center justify-between">
+      <a href="#home" class="interactive font-display font-black text-2xl tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-neonCyan to-neonPurple">DemocracyTech</a>
+      <ul class="hidden sm:flex items-center gap-8 text-sm font-semibold text-slate-300">
+        <li><a href="#home" class="interactive hover:text-white hover:text-glow transition-all">Home</a></li>
+        <li><a href="#history" class="interactive hover:text-white hover:text-glow transition-all">History</a></li>
+        <li><a href="#modern" class="interactive hover:text-white hover:text-glow transition-all">Modern Tech</a></li>
+        <li><a href="#future" class="interactive hover:text-white hover:text-glow transition-all">Future</a></li>
+      </ul>
+      <a href="#modern" class="interactive hidden sm:inline-flex items-center justify-center px-6 py-2 rounded-full relative group overflow-hidden bg-white/5 border border-white/10 hover:border-neonCyan transition-all duration-300">
+        <span class="absolute inset-0 bg-gradient-to-r from-neonCyan/20 to-neonPurple/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+        <span class="relative text-sm font-bold text-white group-hover:text-neonCyan">Explore Now</span>
+      </a>
+    </nav>
+  </header>
+
+  <main class="relative pt-24">
+    <!-- HERO SECTION -->
+    <section id="home" class="min-h-[90vh] flex flex-col justify-center max-w-7xl mx-auto px-6 lg:px-10 py-10 relative">
+      <div class="grid lg:grid-cols-2 gap-12 items-center">
+        <div class="z-10 animate-float">
+          <div class="inline-flex items-center gap-2 rounded-full glass-panel px-4 py-1.5 mb-6 border-neonCyan/30">
+            <span class="w-2 h-2 rounded-full bg-neonCyan animate-glow-pulse"></span>
+            <span class="text-xs font-bold tracking-widest uppercase text-neonCyan">System v2.0 Live</span>
+          </div>
+          <h1 class="font-display text-5xl sm:text-7xl font-black leading-tight">
+            Secure Voting:
+            <span class="block text-transparent bg-clip-text bg-gradient-to-r from-neonCyan via-neonPurple to-neonPink">Kings to Code</span>
+          </h1>
+          <p class="mt-6 text-lg text-slate-400 leading-relaxed max-w-xl">
+            Elections are the core of a democratic nation. DemocracyTech explores the evolution of voting from public shows of power to <strong class="text-white">secure, cryptographic, decentralized tech</strong> designed to protect every voice.
+          </p>
+          <div class="mt-8 flex flex-wrap gap-4">
+            <a href="#history" class="interactive glass-panel px-8 py-3 font-bold text-white hover:bg-white/10 hover:border-neonCyan hover:shadow-[0_0_20px_rgba(0,240,255,0.3)] transition-all">
+              Discover History
+            </a>
+            <a href="#future" class="interactive px-8 py-3 font-bold text-slate-300 hover:text-white flex items-center gap-2 group">
+              See the Future 
+              <span class="group-hover:translate-x-1 transition-transform text-neonPink">&rarr;</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="relative z-10 w-full">
+          <div class="absolute inset-0 bg-gradient-to-tr from-neonCyan to-neonPurple blur-2xl opacity-20 rounded-full animate-blob"></div>
+          <div class="glass-panel p-2 slideshow h-[400px] sm:h-[500px]" data-autoplay="4000">
+            <figure class="slide active rounded-xl overflow-hidden relative">
+              <img src="assets/images/hero-1.jpg" alt="Democracy Intro 1" />
+              <div class="slide-overlay"></div>
+            </figure>
+            <figure class="slide rounded-xl overflow-hidden relative">
+              <img src="assets/images/hero-2.webp" alt="Democracy Intro 2" />
+              <div class="slide-overlay"></div>
+            </figure>
+            <button class="interactive slide-nav prev" type="button">&#10094;</button>
+            <button class="interactive slide-nav next" type="button">&#10095;</button>
+            <div class="slide-dots"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DIVIDER -->
+    <div class="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent my-10"></div>
+
+    <!-- HISTORY SECTION -->
+    <section id="history" class="max-w-7xl mx-auto px-6 lg:px-10 py-20 relative">
+      <div class="absolute right-0 top-1/2 -translate-y-1/2 w-96 h-96 bg-neonPurple/10 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
+      
+      <div class="text-center mb-16">
+        <h2 class="font-display text-4xl sm:text-5xl font-black">
+          The Era of <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-neonPink">Monarchies</span>
+        </h2>
+        <p class="mt-4 text-slate-400 max-w-2xl mx-auto">From kings with absolute power to highly public voting methods that lacked privacy or fairness.</p>
+      </div>
+
+      <div class="grid lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-5 glass-panel p-8 lg:p-10 relative overflow-hidden group">
+          <div class="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-orange-400 to-neonPink"></div>
+          <h3 class="font-display text-2xl font-bold text-white mb-4">Lack of Anonymity</h3>
+          <p class="text-slate-300 leading-relaxed">
+            In the past, political participation was controlled by elites. Early voting practices relied on raised hands or stones—choices were completely visible, leaving voters open to coercion, threats, and pressure.
+          </p>
+          <div class="mt-8 flex gap-4">
+            <div class="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-orange-400">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+            </div>
+            <div class="flex flex-col justify-center">
+              <span class="text-sm font-bold text-white">No Privacy</span>
+              <span class="text-xs text-slate-400">Zero cryptographic security</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-7">
+          <div class="glass-panel p-2 slideshow h-[350px] sm:h-[450px]" data-autoplay="4500">
+            <figure class="slide active rounded-xl overflow-hidden relative">
+              <img src="assets/images/history-1.jpg" alt="History 1" class="transition-transform duration-700 hover:scale-110" />
+              <div class="slide-overlay"></div>
+            </figure>
+            <figure class="slide rounded-xl overflow-hidden relative">
+              <img src="assets/images/history-2.jpg" alt="History 2" class="transition-transform duration-700 hover:scale-110" />
+              <div class="slide-overlay"></div>
+            </figure>
+            <figure class="slide rounded-xl overflow-hidden relative">
+              <img src="assets/images/history-3.jpg" alt="History 3" class="transition-transform duration-700 hover:scale-110" />
+              <div class="slide-overlay"></div>
+            </figure>
+            <button class="interactive slide-nav prev" type="button">&#10094;</button>
+            <button class="interactive slide-nav next" type="button">&#10095;</button>
+            <div class="slide-dots"></div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="mt-8 grid lg:grid-cols-2 gap-8">
+        <div class="glass-card p-2 h-[300px] overflow-hidden group">
+          <img src="assets/images/early-1.webp" alt="Early 1" class="w-full h-full object-cover rounded-lg mix-blend-luminosity group-hover:mix-blend-normal transition-all duration-500 hover:scale-110" />
+        </div>
+        <div class="glass-card p-2 h-[300px] overflow-hidden group">
+          <img src="assets/images/early-2.webp" alt="Early 2" class="w-full h-full object-cover rounded-lg mix-blend-luminosity group-hover:mix-blend-normal transition-all duration-500 hover:scale-110" />
+        </div>
+      </div>
+    </section>
+
+    <!-- MODERN TECH SECTION -->
+    <section id="modern" class="max-w-7xl mx-auto px-6 lg:px-10 py-20 relative">
+      <div class="absolute left-0 top-1/2 -translate-y-1/2 w-96 h-96 bg-neonCyan/10 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
+
+      <div class="text-center mb-16 relative z-10">
+        <h2 class="font-display text-4xl sm:text-5xl font-black">
+          Then vs. Now: <span class="text-transparent bg-clip-text bg-gradient-to-r from-neonCyan to-green-400">The Evolution</span>
+        </h2>
+        <p class="mt-4 text-slate-400 max-w-2xl mx-auto">From low-tech vulnerabilities to decentralized, audited cryptographic trust systems.</p>
+      </div>
+
+      <!-- Main Comparison Frame -->
+      <div class="glass-panel p-2 md:p-4 rotate-1 hover:rotate-0 transition-transform duration-500 relative z-10 mb-20 max-w-4xl mx-auto">
+        <div class="relative rounded-xl overflow-hidden group">
+          <div class="absolute inset-0 bg-neonCyan/20 z-20 mix-blend-overlay opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+          <img src="assets/images/comparison.jpg" alt="Comparison" class="w-full h-auto max-h-[500px] object-cover rounded-xl" />
+        </div>
+      </div>
+
+      <!-- Features Grid -->
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
+        
+        <div class="glass-card p-8 group">
+          <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <svg class="w-7 h-7 text-neonCyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path></svg>
+          </div>
+          <h3 class="font-display text-xl font-bold text-white group-hover:text-neonCyan transition-colors">Digital EVMs</h3>
+          <p class="mt-3 text-sm text-slate-400 leading-relaxed">Fast, reliable electronic vote recording dramatically reduces manual counting errors and delays.</p>
+        </div>
+
+        <div class="glass-card p-8 group">
+          <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-white/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <svg class="w-7 h-7 text-neonPurple" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+          </div>
+          <h3 class="font-display text-xl font-bold text-white group-hover:text-neonPurple transition-colors">Encryption</h3>
+          <p class="mt-3 text-sm text-slate-400 leading-relaxed">Advanced zero-knowledge proofs and cryptography keep data fully confidential yet verifiable.</p>
+        </div>
+
+        <div class="glass-card p-8 group">
+          <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500/20 to-orange-500/20 border border-white/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <svg class="w-7 h-7 text-neonPink" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path></svg>
+          </div>
+          <h3 class="font-display text-xl font-bold text-white group-hover:text-neonPink transition-colors">Biometrics</h3>
+          <p class="mt-3 text-sm text-slate-400 leading-relaxed">Fingerprint and facial ID verification eliminates duplicate voting and synthetic identities.</p>
+        </div>
+
+        <div class="glass-card p-8 group">
+          <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-500/20 to-cyan-500/20 border border-white/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <svg class="w-7 h-7 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          </div>
+          <h3 class="font-display text-xl font-bold text-white group-hover:text-green-400 transition-colors">VVPAT Audit</h3>
+          <p class="mt-3 text-sm text-slate-400 leading-relaxed">Physical paper trails generated on the spot enforce an ultimate, immutable analog backup.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- FUTURE SECTION -->
+    <section id="future" class="relative py-24 mb-10 overflow-hidden">
+      <!-- Full width background element -->
+      <div class="absolute inset-0 bg-gradient-to-b from-transparent via-neonPurple/10 to-transparent"></div>
+      
+      <div class="max-w-7xl mx-auto px-6 lg:px-10 relative z-10 text-center">
+        <h2 class="font-display text-4xl sm:text-6xl font-black mb-6">
+          The Future is <span class="text-transparent bg-clip-text bg-gradient-to-r from-neonCyan via-white to-neonCyan animate-glow-pulse tracking-wide uppercase">Secure</span>
+        </h2>
+        <p class="max-w-3xl mx-auto text-lg text-slate-300 leading-relaxed mb-12">
+          Modern democracies rely on impenetrable systems to mirror the true will of the people. Technologies like 
+          <strong class="text-neonCyan">Web3/Blockchain</strong> and <strong class="text-neonPurple">AI Auditing</strong> 
+          will revolutionize transparency and trust forever.
+        </p>
+
+        <div class="glass-panel p-2 slideshow h-[400px] sm:h-[550px] max-w-5xl mx-auto" data-autoplay="5000">
+          <figure class="slide active rounded-xl overflow-hidden relative">
+            <img src="assets/images/future-1.jpg" alt="Future 1" class="transition-transform duration-[10s] hover:scale-125" />
+            <div class="slide-overlay"></div>
+            <div class="absolute bottom-10 left-10 z-20 text-left">
+              <span class="px-3 py-1 text-xs font-bold uppercase tracking-wider bg-neonCyan/20 text-neonCyan border border-neonCyan/30 rounded-full backdrop-blur-md">Decentralization</span>
+            </div>
+          </figure>
+          <figure class="slide rounded-xl overflow-hidden relative">
+            <img src="assets/images/future-2.jpg" alt="Future 2" class="transition-transform duration-[10s] hover:scale-125" />
+            <div class="slide-overlay"></div>
+            <div class="absolute bottom-10 left-10 z-20 text-left">
+              <span class="px-3 py-1 text-xs font-bold uppercase tracking-wider bg-neonPurple/20 text-neonPurple border border-neonPurple/30 rounded-full backdrop-blur-md">AI Governance</span>
+            </div>
+          </figure>
+          <button class="interactive slide-nav prev" type="button">&#10094;</button>
+          <button class="interactive slide-nav next" type="button">&#10095;</button>
+          <div class="slide-dots"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="relative border-t border-white/10 bg-black/50 backdrop-blur-xl">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 py-12 flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="flex flex-col gap-2 relative z-10">
+        <span class="font-display font-black text-xl text-white">DemocracyTech<span class="text-neonCyan">.</span></span>
+        <p class="text-sm text-slate-500">© 2026 DemocracyTech. Empowering the Voice of the People.</p>
+      </div>
+      
+      <div class="flex items-center gap-4 relative z-10" aria-label="Social media icons">
+        <a href="#" class="interactive w-10 h-10 rounded-full glass-panel flex items-center justify-center text-sm font-bold text-slate-300 hover:text-neonCyan hover:border-neonCyan transition-all group">
+          <span class="group-hover:scale-110 transition-transform">In</span>
+        </a>
+        <a href="#" class="interactive w-10 h-10 rounded-full glass-panel flex items-center justify-center text-sm font-bold text-slate-300 hover:text-neonPurple hover:border-neonPurple transition-all group">
+          <span class="group-hover:scale-110 transition-transform">X</span>
+        </a>
+        <a href="#" class="interactive w-10 h-10 rounded-full glass-panel flex items-center justify-center text-sm font-bold text-slate-300 hover:text-neonPink hover:border-neonPink transition-all group">
+          <span class="group-hover:scale-110 transition-transform">Ig</span>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Custom Cursor Logic
+    const cursorDot = document.getElementById('cursor-dot');
+    const cursorOutline = document.getElementById('cursor-outline');
+    
+    window.addEventListener('mousemove', (e) => {
+      const posX = e.clientX;
+      const posY = e.clientY;
+      
+      cursorDot.style.left = `${posX}px`;
+      cursorDot.style.top = `${posY}px`;
+      
+      // Add slight delay for the outline outline for "smoothness"
+      cursorOutline.animate({
+        left: `${posX}px`,
+        top: `${posY}px`
+      }, { duration: 500, fill: "forwards" });
+    });
+
+    // Nav Background Blur on Scroll
+    const header = document.getElementById('header');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 50) {
+        header.classList.add('shadow-[0_4px_30px_rgba(0,0,0,0.5)]');
+      } else {
+        header.classList.remove('shadow-[0_4px_30px_rgba(0,0,0,0.5)]');
+      }
+    });
+
+    // Slideshow Initialization with improved animations
+    (function initSlideshows() {
+      const shows = document.querySelectorAll('.slideshow');
+
+      shows.forEach((show) => {
+        const slides = Array.from(show.querySelectorAll('.slide'));
+        const prevBtn = show.querySelector('.slide-nav.prev');
+        const nextBtn = show.querySelector('.slide-nav.next');
+        const dotsWrap = show.querySelector('.slide-dots');
+        const delay = Number(show.dataset.autoplay || 4500);
+        let index = 0;
+        let timer = null;
+
+        if (!slides.length) return;
+
+        const dots = slides.map((_, i) => {
+          const dot = document.createElement('button');
+          dot.type = 'button';
+          dot.className = 'interactive slide-dot';
+          dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
+          dot.addEventListener('click', () => {
+            index = i;
+            render();
+            restart();
+          });
+          dotsWrap.appendChild(dot);
+          return dot;
+        });
+
+        function render() {
+          slides.forEach((slide, i) => {
+            if (i === index) {
+              slide.classList.add('active');
+            } else {
+              slide.classList.remove('active');
+            }
+          });
+          dots.forEach((dot, i) => {
+            dot.classList.toggle('active', i === index);
+          });
+        }
+
+        function go(delta) {
+          index = (index + delta + slides.length) % slides.length;
+          render();
+        }
+
+        function restart() {
+          if (timer) clearInterval(timer);
+          timer = setInterval(() => go(1), delay);
+        }
+
+        if (prevBtn) {
+          prevBtn.addEventListener('click', () => { go(-1); restart(); });
+        }
+        if (nextBtn) {
+          nextBtn.addEventListener('click', () => { go(1); restart(); });
+        }
+
+        show.addEventListener('mouseenter', () => { if (timer) clearInterval(timer); });
+        show.addEventListener('mouseleave', restart);
+
+        render();
+        restart();
+      });
+    })();
+  </script>
+</body>
+</html>
